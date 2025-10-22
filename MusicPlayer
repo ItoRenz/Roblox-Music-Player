@@ -148,7 +148,7 @@ local function createUIElement(className, properties)
     return element
 end
 
--- Toggle Button
+-- Toggle Button (POSISI PC DIUBAH)
 local toggleButton = createUIElement("TextButton", {
     Name = "ToggleButton",
     Parent = screenGui,
@@ -160,14 +160,14 @@ local toggleButton = createUIElement("TextButton", {
     ZIndex = 10,
     AutoButtonColor = false,
     Size = isMobile and UDim2.new(0, 65, 0, 25) or UDim2.new(0, 70, 0, 30),
-    Position = isMobile and UDim2.new(0.5, -15, 0, 12) or UDim2.new(0.5, -150, 0, 12),
+    Position = isMobile and UDim2.new(0.5, -15, 0, 12) or UDim2.new(0.5, -190, 0, 12),
     TextSize = isMobile and 12 or 14
 })
 
 createUIElement("UICorner", {CornerRadius = UDim.new(0, 8), Parent = toggleButton})
 createUIElement("UIStroke", {Color = Color3.fromRGB(100, 200, 255), Thickness = 2, Parent = toggleButton})
 
--- Main Frame
+-- Main Frame (UKURAN & POSISI PC DIUBAH)
 local mainFrame = createUIElement("Frame", {
     Name = "MusicPlayer",
     Parent = screenGui,
@@ -175,8 +175,8 @@ local mainFrame = createUIElement("Frame", {
     BorderSizePixel = 0,
     Visible = false,
     ClipsDescendants = true,
-    Size = isMobile and UDim2.new(0, 240, 0, 125) or UDim2.new(0, 280, 0, 150),
-    Position = isMobile and UDim2.new(0.5, 55, 0, 12) or UDim2.new(0.5, -75, 0, 12)
+    Size = isMobile and UDim2.new(0, 240, 0, 125) or UDim2.new(0, 280, 0, 130),
+    Position = isMobile and UDim2.new(0.5, 55, 0, 12) or UDim2.new(0.5, -115, 0, 12)
 })
 
 createUIElement("UICorner", {CornerRadius = UDim.new(0, 8), Parent = mainFrame})
