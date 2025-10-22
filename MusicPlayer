@@ -1,0 +1,653 @@
+-- ============================================
+-- ROBLOX MUSIC PLAYER (LOOP ALL DEFAULT)
+-- Letakkan script ini di StarterGui > ScreenGui
+-- ============================================
+
+-- ============================================
+-- SERVICES & VARIABLES
+-- ============================================
+
+local Players = game:GetService("Players")
+local SoundService = game:GetService("SoundService")
+local UserInputService = game:GetService("UserInputService")
+local RunService = game:GetService("RunService")
+
+local player = Players.LocalPlayer
+local isMobile = UserInputService.TouchEnabled and not UserInputService.KeyboardEnabled
+
+-- ============================================
+-- MUSIC CONFIGURATION
+-- ============================================
+
+local musicList = {
+    {id = "rbxassetid://116833209914208", title = "Mantra Hujan"},
+    {id = "rbxassetid://89968719801460", title = "Mantra Hujan Full"},
+    {id = "rbxassetid://125537427325373", title = "Fond Memories"},
+    {id = "rbxassetid://133107674446157", title = "Pandangan Pertama"},
+    {id = "rbxassetid://127635137354872", title = "Koiiro"},
+    {id = "rbxassetid://86965829990387", title = "Overdose"},
+    {id = "rbxassetid://114760540911362", title = "Propose"},
+    {id = "rbxassetid://107990152265835", title = "Dekat Di Hati"},
+    {id = "rbxassetid://128013367919913", title = "Perih"},
+    {id = "rbxassetid://80429043830229", title = "Seandainya"},
+    {id = "rbxassetid://74741602336127", title = "Gimme Gimme"},
+    {id = "rbxassetid://118982887446486", title = "Mandi"},
+    {id = "rbxassetid://126522101381615", title = "Alone"},
+    {id = "rbxassetid://94905655902524", title = "Faded"},
+    {id = "rbxassetid://108862104985980", title = "Hi 15"},
+    {id = "rbxassetid://80929831941726", title = "Rasa Ini"},
+    {id = "rbxassetid://74839550549059", title = "Faith"},
+    {id = "rbxassetid://134974141632458", title = "Stay With Me"},
+    {id = "rbxassetid://115157259307632", title = "Mantra Hujan Orces"},
+    {id = "rbxassetid://98296513697126", title = "Sukidakara"},
+    {id = "rbxassetid://83958069797605", title = "Learn to Meow"},
+    {id = "rbxassetid://115582874211017", title = "Amanojaku"},
+    {id = "rbxassetid://132011561600869", title = "Lemon"},
+    {id = "rbxassetid://99157081363401", title = "Blue Bird"},
+    {id = "rbxassetid://129338943271762", title = "You Dian Tian"},
+    {id = "rbxassetid://125457729715677", title = "Fansa"},
+    {id = "rbxassetid://103322025270261", title = "Yoru ni Kakeru"},
+    {id = "rbxassetid://137453385683061", title = "Renai Circulation"},
+    {id = "rbxassetid://107813135762430", title = "Fansa"},
+    {id = "rbxassetid://84326629951682", title = "Fiction"},
+    {id = "rbxassetid://89529813750549", title = "Kataomoi"},
+    {id = "rbxassetid://78419750571234", title = "Grand Escape"},
+    {id = "rbxassetid://118904310842205", title = "Tada Koe Hitotsu"},
+    {id = "rbxassetid://115262156750586", title = "Kanashimi wo Yasashisa ni"},
+    {id = "rbxassetid://93848206260834", title = "Homura"},
+    {id = "rbxassetid://132043849899615", title = "Suzume"},
+    {id = "rbxassetid://118881406583610", title = "Terhebat"},
+    {id = "rbxassetid://96178845391302", title = "Selamat Pagi"},
+    {id = "rbxassetid://90311356357051", title = "Senandung Jiwa"},
+    {id = "rbxassetid://105997457127087", title = "Juara Khatulistiwa"},
+    {id = "rbxassetid://140667981271242", title = "Hi Street Time"},
+}
+
+-- ============================================
+-- STATE MANAGEMENT WITH PERSISTENT STORAGE
+-- ============================================
+
+local state = {
+    currentIndex = 1,
+    isPlaying = false,
+    isUIVisible = false,
+    loopMode = "all", -- CHANGED: Default loop mode is now "all"
+    volume = 2,
+    wasPlayingBeforeDeath = false,
+    savedTimePosition = 0,
+    isDead = false,
+    isFirstJoin = true
+}
+
+-- Save Data Functions
+local function saveData()
+    local success, err = pcall(function()
+        local dataToSave = {
+            currentIndex = state.currentIndex,
+            isPlaying = state.isPlaying,
+            loopMode = state.loopMode,
+            volume = state.volume,
+            timePosition = sound and sound.TimePosition or 0,
+            isFirstJoin = false
+        }
+        
+        _G.MusicPlayerData = dataToSave
+        
+        print("💾 Data saved - Playing: " .. tostring(state.isPlaying))
+    end)
+    
+    if not success then
+        warn("Failed to save data: " .. tostring(err))
+    end
+end
+
+local function loadData()
+    local success, result = pcall(function()
+        if _G.MusicPlayerData then
+            local data = _G.MusicPlayerData
+            
+            state.currentIndex = data.currentIndex or 1
+            state.isPlaying = data.isPlaying or false
+            state.loopMode = data.loopMode or "all" -- CHANGED: Default to "all" if no saved data
+            state.volume = data.volume or 2
+            state.savedTimePosition = data.timePosition or 0
+            state.isFirstJoin = data.isFirstJoin == nil and true or data.isFirstJoin
+            
+            print("📂 Data loaded - Was Playing: " .. tostring(state.isPlaying))
+            return true
+        end
+        return false
+    end)
+    
+    return success and result
+end
+
+-- ============================================
+-- SOUND SETUP
+-- ============================================
+
+local sound = Instance.new("Sound")
+sound.Parent = SoundService
+sound.Looped = false
+sound.Volume = state.volume * 0.25
+sound.Name = "MusicPlayerSound"
+
+-- ============================================
+-- UI SETUP
+-- ============================================
+
+local screenGui = script.Parent
+screenGui.ResetOnSpawn = false
+screenGui.IgnoreGuiInset = true
+
+local function createUIElement(className, properties)
+    local element = Instance.new(className)
+    for prop, value in pairs(properties) do
+        element[prop] = value
+    end
+    return element
+end
+
+-- Toggle Button
+local toggleButton = createUIElement("TextButton", {
+    Name = "ToggleButton",
+    Parent = screenGui,
+    BackgroundColor3 = Color3.fromRGB(30, 30, 45),
+    BorderSizePixel = 0,
+    Text = "Music",
+    TextColor3 = Color3.fromRGB(255, 255, 255),
+    Font = Enum.Font.GothamBold,
+    ZIndex = 10,
+    AutoButtonColor = false,
+    Size = isMobile and UDim2.new(0, 70, 0, 30) or UDim2.new(0, 70, 0, 30),
+    Position = isMobile and UDim2.new(0.5, -15, 0, 15) or UDim2.new(0.5, -150, 0, 15),
+    TextSize = isMobile and 12 or 14
+})
+
+createUIElement("UICorner", {CornerRadius = UDim.new(0, 8), Parent = toggleButton})
+createUIElement("UIStroke", {Color = Color3.fromRGB(100, 200, 255), Thickness = 2, Parent = toggleButton})
+
+-- Main Frame
+local mainFrame = createUIElement("Frame", {
+    Name = "MusicPlayer",
+    Parent = screenGui,
+    BackgroundColor3 = Color3.fromRGB(25, 28, 38),
+    BorderSizePixel = 0,
+    Visible = false,
+    ClipsDescendants = true,
+    Size = isMobile and UDim2.new(0, 240, 0, 145) or UDim2.new(0, 280, 0, 150),
+    Position = isMobile and UDim2.new(0.5, 60, 0, 15) or UDim2.new(0.5, -75, 0, 15)
+})
+
+createUIElement("UICorner", {CornerRadius = UDim.new(0, 8), Parent = mainFrame})
+createUIElement("UIStroke", {Color = Color3.fromRGB(70, 180, 255), Thickness = 2.5, Parent = mainFrame})
+
+local gradient = createUIElement("UIGradient", {Parent = mainFrame, Rotation = 45})
+gradient.Color = ColorSequence.new{
+    ColorSequenceKeypoint.new(0, Color3.fromRGB(25, 28, 38)),
+    ColorSequenceKeypoint.new(1, Color3.fromRGB(35, 40, 55))
+}
+
+-- Close Button
+local closeBtn = createUIElement("TextButton", {
+    Name = "CloseButton",
+    Parent = mainFrame,
+    BackgroundColor3 = Color3.fromRGB(200, 50, 50),
+    BorderSizePixel = 0,
+    Text = "X",
+    TextColor3 = Color3.fromRGB(255, 255, 255),
+    Font = Enum.Font.GothamBold,
+    AutoButtonColor = false,
+    ZIndex = 2,
+    Size = isMobile and UDim2.new(0, 20, 0, 20) or UDim2.new(0, 18, 0, 18),
+    Position = UDim2.new(1, -26, 0, 4),
+    TextSize = isMobile and 11 or 12
+})
+
+createUIElement("UICorner", {CornerRadius = UDim.new(0, 6), Parent = closeBtn})
+
+-- Title Label
+local titleLabel = createUIElement("TextLabel", {
+    Parent = mainFrame,
+    BackgroundTransparency = 1,
+    Text = "Music Player",
+    TextColor3 = Color3.fromRGB(255, 255, 255),
+    Font = Enum.Font.GothamBold,
+    TextXAlignment = Enum.TextXAlignment.Left,
+    Size = UDim2.new(1, -55, 0, 20),
+    Position = UDim2.new(0, 8, 0, 4),
+    TextSize = isMobile and 12 or 13
+})
+
+-- Divider Line
+createUIElement("Frame", {
+    Parent = mainFrame,
+    BackgroundColor3 = Color3.fromRGB(70, 180, 255),
+    BorderSizePixel = 0,
+    BackgroundTransparency = 0.7,
+    Size = UDim2.new(1, -16, 0, 1),
+    Position = UDim2.new(0, 8, 0, 26)
+})
+
+-- Song Title
+local songTitleLabel = createUIElement("TextLabel", {
+    Parent = mainFrame,
+    BackgroundTransparency = 1,
+    Text = musicList[1].title,
+    TextColor3 = Color3.fromRGB(255, 255, 255),
+    Font = Enum.Font.GothamBold,
+    TextXAlignment = Enum.TextXAlignment.Center,
+    TextScaled = true,
+    Size = UDim2.new(1, -20, 0, 24),
+    Position = UDim2.new(0, 10, 0, 29)
+})
+
+-- Progress Bar
+local progressBg = createUIElement("Frame", {
+    Name = "ProgressBg",
+    Parent = mainFrame,
+    BackgroundColor3 = Color3.fromRGB(45, 50, 65),
+    BorderSizePixel = 0,
+    Size = UDim2.new(1, -20, 0, 4),
+    Position = UDim2.new(0, 10, 0, 56)
+})
+
+createUIElement("UICorner", {CornerRadius = UDim.new(1, 0), Parent = progressBg})
+
+local progressFill = createUIElement("Frame", {
+    Name = "ProgressFill",
+    Parent = progressBg,
+    BackgroundColor3 = Color3.fromRGB(70, 180, 255),
+    BorderSizePixel = 0,
+    Size = UDim2.new(0, 0, 1, 0)
+})
+
+createUIElement("UICorner", {CornerRadius = UDim.new(1, 0), Parent = progressFill})
+
+-- Time Display
+local timeLabel = createUIElement("TextLabel", {
+    Parent = mainFrame,
+    BackgroundTransparency = 1,
+    Size = UDim2.new(1, 0, 0, 12),
+    Text = "00:00 / 00:00",
+    TextColor3 = Color3.fromRGB(200, 210, 225),
+    Font = Enum.Font.Gotham,
+    TextXAlignment = Enum.TextXAlignment.Center,
+    Position = UDim2.new(0, 0, 0, 62),
+    TextSize = isMobile and 9 or 10
+})
+
+-- Loop Status Label
+local loopStatusLabel = createUIElement("TextLabel", {
+    Parent = mainFrame,
+    BackgroundTransparency = 1,
+    Text = "Loop: All", -- CHANGED: Default display shows "Loop: All"
+    TextColor3 = Color3.fromRGB(70, 180, 255), -- CHANGED: Active color from start
+    Font = Enum.Font.Gotham,
+    TextXAlignment = Enum.TextXAlignment.Center,
+    Size = isMobile and UDim2.new(0, 55, 0, 12) or UDim2.new(0, 60, 0, 12),
+    Position = UDim2.new(0, 10, 0, 78),
+    TextSize = isMobile and 8 or 9
+})
+
+-- Volume Input
+local volumeInput = createUIElement("TextBox", {
+    Parent = mainFrame,
+    BackgroundColor3 = Color3.fromRGB(45, 50, 65),
+    BorderSizePixel = 0,
+    Text = tostring(state.volume),
+    TextColor3 = Color3.fromRGB(255, 255, 255),
+    Font = Enum.Font.GothamBold,
+    PlaceholderText = "0-10",
+    ClearTextOnFocus = false,
+    TextXAlignment = Enum.TextXAlignment.Center,
+    Size = isMobile and UDim2.new(0, 45, 0, 26) or UDim2.new(0, 50, 0, 26),
+    Position = isMobile and UDim2.new(1, -53, 0, 93) or UDim2.new(1, -58, 0, 93),
+    TextSize = isMobile and 11 or 12
+})
+
+createUIElement("UICorner", {CornerRadius = UDim.new(1, 0), Parent = volumeInput})
+createUIElement("UIStroke", {Color = Color3.fromRGB(70, 180, 255), Thickness = 0.5, Transparency = 0.5, Parent = volumeInput})
+
+-- Controls Container
+local controlsFrame = createUIElement("Frame", {
+    Parent = mainFrame,
+    BackgroundTransparency = 1,
+    Size = UDim2.new(1, 0, 0, 32),
+    Position = UDim2.new(0, 0, 0, 92)
+})
+
+-- Control Buttons
+local loopBtn = createUIElement("TextButton", {
+    Parent = controlsFrame,
+    BackgroundTransparency = 1,
+    BorderSizePixel = 0,
+    Text = "🔁",
+    TextColor3 = Color3.fromRGB(70, 180, 255), -- CHANGED: Active color from start
+    Font = Enum.Font.GothamBold,
+    AutoButtonColor = false,
+    Size = isMobile and UDim2.new(0, 26, 0, 26) or UDim2.new(0, 28, 0, 28),
+    Position = isMobile and UDim2.new(0, 10, 0.5, -13) or UDim2.new(0, 10, 0.5, -14),
+    TextSize = isMobile and 15 or 16
+})
+
+local prevBtn = createUIElement("TextButton", {
+    Parent = controlsFrame,
+    BackgroundTransparency = 1,
+    BorderSizePixel = 0,
+    Text = "⏮️",
+    TextColor3 = Color3.fromRGB(220, 220, 230),
+    Font = Enum.Font.GothamBold,
+    AutoButtonColor = false,
+    Size = isMobile and UDim2.new(0, 26, 0, 26) or UDim2.new(0, 28, 0, 28),
+    Position = isMobile and UDim2.new(0.5, -39, 0.5, -13) or UDim2.new(0.5, -42, 0.5, -14),
+    TextSize = isMobile and 13 or 14
+})
+
+local playBtn = createUIElement("TextButton", {
+    Parent = controlsFrame,
+    BackgroundTransparency = 1,
+    BorderSizePixel = 0,
+    Text = "▶️",
+    TextColor3 = Color3.fromRGB(70, 180, 255),
+    Font = Enum.Font.GothamBold,
+    AutoButtonColor = false,
+    Size = isMobile and UDim2.new(0, 30, 0, 30) or UDim2.new(0, 32, 0, 32),
+    Position = isMobile and UDim2.new(0.5, -15, 0.5, -15) or UDim2.new(0.5, -16, 0.5, -16),
+    TextSize = isMobile and 17 or 18
+})
+
+local nextBtn = createUIElement("TextButton", {
+    Parent = controlsFrame,
+    BackgroundTransparency = 1,
+    BorderSizePixel = 0,
+    Text = "⏭️",
+    TextColor3 = Color3.fromRGB(220, 220, 230),
+    Font = Enum.Font.GothamBold,
+    AutoButtonColor = false,
+    Size = isMobile and UDim2.new(0, 26, 0, 26) or UDim2.new(0, 28, 0, 28),
+    Position = isMobile and UDim2.new(0.5, 13, 0.5, -13) or UDim2.new(0.5, 14, 0.5, -14),
+    TextSize = isMobile and 13 or 14
+})
+
+-- ============================================
+-- UTILITY FUNCTIONS
+-- ============================================
+
+local function formatTime(seconds)
+    local mins = math.floor(seconds / 60)
+    local secs = math.floor(seconds % 60)
+    return string.format("%02d:%02d", mins, secs)
+end
+
+local function updateProgressBar()
+    if sound.IsLoaded and sound.TimeLength > 0 then
+        local progress = sound.TimePosition / sound.TimeLength
+        progressFill:TweenSize(
+            UDim2.new(progress, 0, 1, 0),
+            Enum.EasingDirection.Out,
+            Enum.EasingStyle.Linear,
+            0.1,
+            true
+        )
+        timeLabel.Text = formatTime(sound.TimePosition) .. " / " .. formatTime(sound.TimeLength)
+    else
+        timeLabel.Text = "00:00 / 00:00"
+    end
+end
+
+local function updatePlayButton()
+    playBtn.Text = state.isPlaying and "⏹️" or "▶️"
+end
+
+local function updateLoopDisplay()
+    if state.loopMode == "off" then
+        loopStatusLabel.Text = "Loop: Off"
+        loopStatusLabel.TextColor3 = Color3.fromRGB(150, 150, 160)
+        loopBtn.Text = "🔁"
+        loopBtn.TextColor3 = Color3.fromRGB(150, 150, 160)
+        sound.Looped = false
+    elseif state.loopMode == "all" then
+        loopStatusLabel.Text = "Loop: All"
+        loopStatusLabel.TextColor3 = Color3.fromRGB(70, 180, 255)
+        loopBtn.Text = "🔁"
+        loopBtn.TextColor3 = Color3.fromRGB(70, 180, 255)
+        sound.Looped = false
+    else
+        loopStatusLabel.Text = "Loop: One"
+        loopStatusLabel.TextColor3 = Color3.fromRGB(255, 150, 100)
+        loopBtn.Text = "🔂"
+        loopBtn.TextColor3 = Color3.fromRGB(255, 150, 100)
+        sound.Looped = true
+    end
+end
+
+-- ============================================
+-- MUSIC CONTROL FUNCTIONS
+-- ============================================
+
+local function updateSong(shouldAutoPlay)
+    local currentSong = musicList[state.currentIndex]
+    sound.SoundId = currentSong.id
+    songTitleLabel.Text = currentSong.title
+    
+    sound.Loaded:Wait()
+    
+    local success = pcall(function()
+        if shouldAutoPlay and not state.isDead then
+            sound.TimePosition = 0
+            sound:Play()
+            state.isPlaying = true
+        end
+    end)
+    
+    if not success then
+        warn("⚠️ Failed to load: " .. currentSong.title)
+        task.wait(0.5)
+        nextSong()
+    else
+        if sound.TimeLength > 0 then
+            timeLabel.Text = "00:00 / " .. formatTime(sound.TimeLength)
+        end
+    end
+    
+    updatePlayButton()
+    saveData()
+end
+
+local function togglePlay()
+    state.isPlaying = not state.isPlaying
+    
+    if state.isPlaying then
+        sound:Play()
+    else
+        sound:Stop()
+    end
+    
+    updatePlayButton()
+    saveData()
+end
+
+local function nextSong()
+    state.currentIndex = (state.currentIndex % #musicList) + 1
+    updateSong(state.isPlaying)
+end
+
+local function prevSong()
+    state.currentIndex = state.currentIndex > 1 and state.currentIndex - 1 or #musicList
+    updateSong(state.isPlaying)
+end
+
+local function toggleLoop()
+    if state.loopMode == "off" then
+        state.loopMode = "all"
+    elseif state.loopMode == "all" then
+        state.loopMode = "one"
+    else
+        state.loopMode = "off"
+    end
+    updateLoopDisplay()
+    saveData()
+end
+
+-- ============================================
+-- EVENT HANDLERS
+-- ============================================
+
+toggleButton.MouseButton1Click:Connect(function()
+    state.isUIVisible = not state.isUIVisible
+    mainFrame.Visible = state.isUIVisible
+end)
+
+closeBtn.MouseButton1Click:Connect(function()
+    state.isUIVisible = false
+    mainFrame.Visible = false
+end)
+
+playBtn.MouseButton1Click:Connect(togglePlay)
+nextBtn.MouseButton1Click:Connect(nextSong)
+prevBtn.MouseButton1Click:Connect(prevSong)
+loopBtn.MouseButton1Click:Connect(toggleLoop)
+
+sound.Ended:Connect(function()
+    if state.loopMode == "all" then
+        nextSong()
+    elseif state.loopMode == "off" then
+        state.isPlaying = false
+        updatePlayButton()
+        saveData()
+    end
+end)
+
+volumeInput.FocusLost:Connect(function()
+    local inputValue = tonumber(volumeInput.Text)
+    if inputValue then
+        local clampedValue = math.clamp(inputValue, 0, 10)
+        sound.Volume = clampedValue * 0.25
+        volumeInput.Text = tostring(clampedValue)
+        state.volume = clampedValue
+        saveData()
+    else
+        volumeInput.Text = tostring(state.volume)
+    end
+end)
+
+-- ============================================
+-- UPDATE LOOP
+-- ============================================
+
+RunService.Heartbeat:Connect(function()
+    if state.isPlaying and sound.IsPlaying and not state.isDead then
+        updateProgressBar()
+    end
+end)
+
+-- Auto-save every 5 seconds
+task.spawn(function()
+    while true do
+        task.wait(5)
+        if state.isPlaying then
+            saveData()
+        end
+    end
+end)
+
+-- ============================================
+-- DEATH & RESPAWN SYSTEM (FIXED)
+-- ============================================
+
+local function setupCharacter(character)
+    local humanoid = character:WaitForChild("Humanoid")
+    
+    humanoid.Died:Connect(function()
+        print("💀 Player died - Music state: " .. (state.isPlaying and "PLAYING" or "STOPPED"))
+        
+        state.isDead = true
+        state.wasPlayingBeforeDeath = state.isPlaying
+        state.savedTimePosition = sound.TimePosition
+        
+        if sound.IsPlaying then
+            sound:Stop()
+        end
+        
+        saveData()
+    end)
+end
+
+player.CharacterAdded:Connect(function(character)
+    print("🔄 Character respawning...")
+    
+    setupCharacter(character)
+    
+    task.wait(0.5)
+    
+    state.isDead = false
+    
+    if state.wasPlayingBeforeDeath then
+        print("✅ Restoring PLAYING state after respawn")
+        
+        if not sound.IsLoaded then
+            sound.Loaded:Wait()
+        end
+        
+        state.isPlaying = true
+        sound:Play()
+        
+        task.wait(0.2)
+        if state.savedTimePosition > 0 and state.savedTimePosition < sound.TimeLength then
+            sound.TimePosition = state.savedTimePosition
+        end
+    else
+        print("⏹️ Keeping STOPPED state - Music will NOT auto-play")
+        state.isPlaying = false
+        if sound.IsPlaying then
+            sound:Stop()
+        end
+    end
+    
+    updatePlayButton()
+    saveData()
+    
+    print("✅ Respawn complete - Music: " .. (state.isPlaying and "PLAYING" or "STOPPED"))
+end)
+
+-- ============================================
+-- INITIALIZATION
+-- ============================================
+
+local dataLoaded = loadData()
+
+if dataLoaded then
+    print("📂 Loading previous session...")
+    volumeInput.Text = tostring(state.volume)
+    sound.Volume = state.volume * 0.25
+end
+
+updateSong(false)
+updateLoopDisplay()
+
+if player.Character then
+    setupCharacter(player.Character)
+end
+
+if state.isFirstJoin and not dataLoaded then
+    print("🎵 First join detected - Auto-playing music...")
+    task.wait(0.5)
+    state.isPlaying = true
+    sound:Play()
+    state.isFirstJoin = false
+    saveData()
+else
+    print("⏹️ Restoring previous state - Music: " .. (state.isPlaying and "PLAYING" or "STOPPED"))
+    if state.isPlaying then
+        task.wait(0.3)
+        sound:Play()
+    end
+end
+
+print("🎵 Music Player Loaded!")
+print("📋 Total Songs: " .. #musicList)
+print("💾 Save Data: " .. (dataLoaded and "Loaded" or "New Session"))
+print("🔁 Default Loop Mode: All")
+
+updatePlayButton()
