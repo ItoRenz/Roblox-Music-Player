@@ -71,7 +71,7 @@ local state = {
     currentIndex = 1,
     isPlaying = false,
     isUIVisible = false,
-    loopMode = "all", -- CHANGED: Default loop mode is now "all"
+    loopMode = "all",
     volume = 2,
     wasPlayingBeforeDeath = false,
     savedTimePosition = 0,
@@ -108,7 +108,7 @@ local function loadData()
             
             state.currentIndex = data.currentIndex or 1
             state.isPlaying = data.isPlaying or false
-            state.loopMode = data.loopMode or "all" -- CHANGED: Default to "all" if no saved data
+            state.loopMode = data.loopMode or "all"
             state.volume = data.volume or 2
             state.savedTimePosition = data.timePosition or 0
             state.isFirstJoin = data.isFirstJoin == nil and true or data.isFirstJoin
@@ -154,13 +154,13 @@ local toggleButton = createUIElement("TextButton", {
     Parent = screenGui,
     BackgroundColor3 = Color3.fromRGB(30, 30, 45),
     BorderSizePixel = 0,
-    Text = "Music",
+    Text = "MUSIC",
     TextColor3 = Color3.fromRGB(255, 255, 255),
     Font = Enum.Font.GothamBold,
     ZIndex = 10,
     AutoButtonColor = false,
-    Size = isMobile and UDim2.new(0, 70, 0, 30) or UDim2.new(0, 70, 0, 30),
-    Position = isMobile and UDim2.new(0.5, -15, 0, 15) or UDim2.new(0.5, -150, 0, 15),
+    Size = isMobile and UDim2.new(0, 65, 0, 25) or UDim2.new(0, 70, 0, 30),
+    Position = isMobile and UDim2.new(0.5, -15, 0, 12) or UDim2.new(0.5, -150, 0, 12),
     TextSize = isMobile and 12 or 14
 })
 
@@ -175,8 +175,8 @@ local mainFrame = createUIElement("Frame", {
     BorderSizePixel = 0,
     Visible = false,
     ClipsDescendants = true,
-    Size = isMobile and UDim2.new(0, 240, 0, 145) or UDim2.new(0, 280, 0, 150),
-    Position = isMobile and UDim2.new(0.5, 60, 0, 15) or UDim2.new(0.5, -75, 0, 15)
+    Size = isMobile and UDim2.new(0, 240, 0, 125) or UDim2.new(0, 280, 0, 150),
+    Position = isMobile and UDim2.new(0.5, 55, 0, 12) or UDim2.new(0.5, -75, 0, 12)
 })
 
 createUIElement("UICorner", {CornerRadius = UDim.new(0, 8), Parent = mainFrame})
@@ -281,8 +281,8 @@ local timeLabel = createUIElement("TextLabel", {
 local loopStatusLabel = createUIElement("TextLabel", {
     Parent = mainFrame,
     BackgroundTransparency = 1,
-    Text = "Loop: All", -- CHANGED: Default display shows "Loop: All"
-    TextColor3 = Color3.fromRGB(70, 180, 255), -- CHANGED: Active color from start
+    Text = "Loop: All",
+    TextColor3 = Color3.fromRGB(70, 180, 255),
     Font = Enum.Font.Gotham,
     TextXAlignment = Enum.TextXAlignment.Center,
     Size = isMobile and UDim2.new(0, 55, 0, 12) or UDim2.new(0, 60, 0, 12),
@@ -323,7 +323,7 @@ local loopBtn = createUIElement("TextButton", {
     BackgroundTransparency = 1,
     BorderSizePixel = 0,
     Text = "🔁",
-    TextColor3 = Color3.fromRGB(70, 180, 255), -- CHANGED: Active color from start
+    TextColor3 = Color3.fromRGB(70, 180, 255),
     Font = Enum.Font.GothamBold,
     AutoButtonColor = false,
     Size = isMobile and UDim2.new(0, 26, 0, 26) or UDim2.new(0, 28, 0, 28),
@@ -553,7 +553,7 @@ task.spawn(function()
 end)
 
 -- ============================================
--- DEATH & RESPAWN SYSTEM (FIXED)
+-- DEATH & RESPAWN SYSTEM
 -- ============================================
 
 local function setupCharacter(character)
