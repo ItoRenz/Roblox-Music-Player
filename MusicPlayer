@@ -2,9 +2,9 @@
 ============================================
 ROBLOX MUSIC PLAYER
 Author: ItoRenz00
-Version: 1.0.0
-Description: Advanced music player with persistent state, loop modes, and mobile support
-Place this script in: StarterGui > ScreenGui
+Version: 1.0.3
+Description: Advanced music player with persistent state, loop modes, mobile support, and auto-play on first join
+Place this script in: StarterPlayer > StarterPlayerScripts
 ============================================
 --]]
 
@@ -18,6 +18,7 @@ local UserInputService = game:GetService("UserInputService")
 local RunService = game:GetService("RunService")
 
 local player = Players.LocalPlayer
+local playerGui = player:WaitForChild("PlayerGui")
 local isMobile = UserInputService.TouchEnabled and not UserInputService.KeyboardEnabled
 
 -- ============================================
@@ -25,47 +26,23 @@ local isMobile = UserInputService.TouchEnabled and not UserInputService.Keyboard
 -- ============================================
 
 local musicList = {
-	{id = "rbxassetid://116833209914208", title = "Mantra Hujan"},
-	{id = "rbxassetid://89968719801460", title = "Mantra Hujan Full"},
-	{id = "rbxassetid://125537427325373", title = "Fond Memories"},
-	{id = "rbxassetid://133107674446157", title = "Pandangan Pertama"},
-	{id = "rbxassetid://127635137354872", title = "Koiiro"},
-	{id = "rbxassetid://86965829990387", title = "Overdose"},
-	{id = "rbxassetid://114760540911362", title = "Propose"},
-	{id = "rbxassetid://107990152265835", title = "Dekat Di Hati"},
-	{id = "rbxassetid://128013367919913", title = "Perih"},
-	{id = "rbxassetid://80429043830229", title = "Seandainya"},
-	{id = "rbxassetid://74741602336127", title = "Gimme Gimme"},
-	{id = "rbxassetid://118982887446486", title = "Mandi"},
-	{id = "rbxassetid://126522101381615", title = "Alone"},
-	{id = "rbxassetid://94905655902524", title = "Faded"},
-	{id = "rbxassetid://108862104985980", title = "Hi 15"},
-	{id = "rbxassetid://80929831941726", title = "Rasa Ini"},
-	{id = "rbxassetid://74839550549059", title = "Faith"},
-	{id = "rbxassetid://134974141632458", title = "Stay With Me"},
-	{id = "rbxassetid://115157259307632", title = "Mantra Hujan Orces"},
-	{id = "rbxassetid://98296513697126", title = "Sukidakara"},
-	{id = "rbxassetid://83958069797605", title = "Learn to Meow"},
-	{id = "rbxassetid://115582874211017", title = "Amanojaku"},
-	{id = "rbxassetid://132011561600869", title = "Lemon"},
-	{id = "rbxassetid://99157081363401", title = "Blue Bird"},
-	{id = "rbxassetid://129338943271762", title = "You Dian Tian"},
-	{id = "rbxassetid://125457729715677", title = "Fansa"},
-	{id = "rbxassetid://103322025270261", title = "Yoru ni Kakeru"},
-	{id = "rbxassetid://137453385683061", title = "Renai Circulation"},
-	{id = "rbxassetid://107813135762430", title = "Fansa"},
-	{id = "rbxassetid://84326629951682", title = "Fiction"},
-	{id = "rbxassetid://89529813750549", title = "Kataomoi"},
-	{id = "rbxassetid://78419750571234", title = "Grand Escape"},
-	{id = "rbxassetid://118904310842205", title = "Tada Koe Hitotsu"},
-	{id = "rbxassetid://115262156750586", title = "Kanashimi wo Yasashisa ni"},
-	{id = "rbxassetid://93848206260834", title = "Homura"},
-	{id = "rbxassetid://132043849899615", title = "Suzume"},
-	{id = "rbxassetid://118881406583610", title = "Terhebat"},
-	{id = "rbxassetid://96178845391302", title = "Selamat Pagi"},
-	{id = "rbxassetid://90311356357051", title = "Senandung Jiwa"},
-	{id = "rbxassetid://105997457127087", title = "Juara Khatulistiwa"},
-	{id = "rbxassetid://140667981271242", title = "Hi Street Time"},
+	{id = "rbxassetid://133857865643061", title = "Indonesia to Australia"},
+	{id = "rbxassetid://114138177515042", title = "Where We Are"},
+	{id = "rbxassetid://89968719801460", title = "Next"},
+	{id = "rbxassetid://129988226070628", title = "DJ Nasty Girl"},
+	{id = "rbxassetid://89610760702249", title = "Stereo Love"},
+	{id = "rbxassetid://118390472006859", title = "DJ Party Shaker"},
+	{id = "rbxassetid://90145710334449", title = "DJ World"},
+	{id = "rbxassetid://89180400948567", title = "Phonk Toma"},
+	{id = "rbxassetid://116239599730544", title = "Goat"},
+	{id = "rbxassetid://135018311294635", title = "DJ Cinnamon"},
+	{id = "rbxassetid://96077163288111", title = "Kita Usahakan Lagi"},
+	{id = "rbxassetid://77533933904801", title = "Coba Coba"},
+	{id = "rbxassetid://104207837699519", title = "Tabola bale"},
+	{id = "rbxassetid://119254319180287", title = "Culik Aku Dong"},
+	{id = "rbxassetid://116255319981650", title = "Jamilah aisyah"},
+	{id = "rbxassetid://133361466559971", title = "Dame Um Grrr"},
+	{id = "rbxassetid://80223079206027", title = "Kecewa"},
 }
 
 -- ============================================
@@ -77,7 +54,7 @@ local state = {
 	isPlaying = false,
 	isUIVisible = false,
 	loopMode = "all",
-	volume = 2,
+	volume = 5,
 	wasPlayingBeforeDeath = false,
 	savedTimePosition = 0,
 	isDead = false,
@@ -85,7 +62,7 @@ local state = {
 }
 
 -- Save Data Functions
-local function saveData()
+local function saveData(showLog)
 	local success, err = pcall(function()
 		local dataToSave = {
 			currentIndex = state.currentIndex,
@@ -97,7 +74,10 @@ local function saveData()
 		}
 		
 		_G.MusicPlayerData = dataToSave
-		print("💾 Data saved - Playing: " .. tostring(state.isPlaying))
+		
+		if showLog then
+			print("💾 Data saved - Playing: " .. tostring(state.isPlaying))
+		end
 	end)
 	
 	if not success then
@@ -113,7 +93,7 @@ local function loadData()
 			state.currentIndex = data.currentIndex or 1
 			state.isPlaying = data.isPlaying or false
 			state.loopMode = data.loopMode or "all"
-			state.volume = data.volume or 2
+			state.volume = data.volume or 5
 			state.savedTimePosition = data.timePosition or 0
 			state.isFirstJoin = data.isFirstJoin == nil and true or data.isFirstJoin
 			
@@ -140,9 +120,12 @@ sound.Name = "MusicPlayerSound"
 -- UI SETUP
 -- ============================================
 
-local screenGui = script.Parent
+local screenGui = Instance.new("ScreenGui")
+screenGui.Name = "MusicPlayerGui"
+screenGui.Parent = playerGui
 screenGui.ResetOnSpawn = false
 screenGui.IgnoreGuiInset = true
+screenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 
 local function createUIElement(className, properties)
 	local element = Instance.new(className)
@@ -401,7 +384,7 @@ local function updateProgressBar()
 end
 
 local function updatePlayButton()
-	playBtn.Text = state.isPlaying and "⏹️" or "▶️"
+	playBtn.Text = state.isPlaying and "⏸️" or "▶️"
 end
 
 local function updateLoopDisplay()
@@ -430,16 +413,24 @@ end
 -- MUSIC CONTROL FUNCTIONS
 -- ============================================
 
-local function updateSong(shouldAutoPlay)
+local function updateSong(shouldAutoPlay, resetPosition)
 	local currentSong = musicList[state.currentIndex]
 	sound.SoundId = currentSong.id
 	songTitleLabel.Text = currentSong.title
 	
+	local wasPlaying = state.isPlaying
+	
 	sound.Loaded:Wait()
 	
 	local success = pcall(function()
-		if shouldAutoPlay and not state.isDead then
+		if resetPosition then
 			sound.TimePosition = 0
+		end
+		
+		if shouldAutoPlay and not state.isDead then
+			sound:Play()
+			state.isPlaying = true
+		elseif wasPlaying then
 			sound:Play()
 			state.isPlaying = true
 		end
@@ -463,9 +454,9 @@ local function togglePlay()
 	state.isPlaying = not state.isPlaying
 	
 	if state.isPlaying then
-		sound:Play()
+		sound:Resume()
 	else
-		sound:Stop()
+		sound:Pause()
 	end
 	
 	updatePlayButton()
@@ -473,13 +464,15 @@ local function togglePlay()
 end
 
 local function nextSong()
+	sound:Stop()
 	state.currentIndex = (state.currentIndex % #musicList) + 1
-	updateSong(state.isPlaying)
+	updateSong(state.isPlaying, true)
 end
 
 local function prevSong()
+	sound:Stop()
 	state.currentIndex = state.currentIndex > 1 and state.currentIndex - 1 or #musicList
-	updateSong(state.isPlaying)
+	updateSong(state.isPlaying, true)
 end
 
 local function toggleLoop()
@@ -514,6 +507,7 @@ prevBtn.MouseButton1Click:Connect(prevSong)
 loopBtn.MouseButton1Click:Connect(toggleLoop)
 
 sound.Ended:Connect(function()
+	print("🎵 Song ended - Loop mode: " .. state.loopMode)
 	if state.loopMode == "all" then
 		nextSong()
 	elseif state.loopMode == "off" then
@@ -521,6 +515,7 @@ sound.Ended:Connect(function()
 		updatePlayButton()
 		saveData()
 	end
+	-- loopMode "one" will loop automatically because sound.Looped = true
 end)
 
 volumeInput.FocusLost:Connect(function()
@@ -546,12 +541,12 @@ RunService.Heartbeat:Connect(function()
 	end
 end)
 
--- Auto-save every 5 seconds
+-- Auto-save every 30 seconds
 task.spawn(function()
 	while true do
-		task.wait(5)
+		task.wait(30)
 		if state.isPlaying then
-			saveData()
+			saveData(false)
 		end
 	end
 end)
@@ -564,22 +559,18 @@ local function setupCharacter(character)
 	local humanoid = character:WaitForChild("Humanoid")
 	
 	humanoid.Died:Connect(function()
-		print("💀 Player died - Music state: " .. (state.isPlaying and "PLAYING" or "STOPPED"))
+		print("💀 Player died - Music continues")
 		
 		state.isDead = true
 		state.wasPlayingBeforeDeath = state.isPlaying
 		state.savedTimePosition = sound.TimePosition
 		
-		if sound.IsPlaying then
-			sound:Stop()
-		end
-		
-		saveData()
+		saveData(false)
 	end)
 end
 
 player.CharacterAdded:Connect(function(character)
-	print("🔄 Character respawning...")
+	print("🔄 Character spawned")
 	
 	setupCharacter(character)
 	
@@ -587,32 +578,31 @@ player.CharacterAdded:Connect(function(character)
 	
 	state.isDead = false
 	
-	if state.wasPlayingBeforeDeath then
-		print("✅ Restoring PLAYING state after respawn")
-		
-		if not sound.IsLoaded then
-			sound.Loaded:Wait()
+	-- If this is initial spawn and music should be playing, ensure it continues
+	if state.isPlaying then
+		print("🎵 Ensuring music continues after spawn...")
+		if not sound.IsPlaying then
+			sound:Play()
+			print("▶️ Restarted music playback")
+		else
+			print("✅ Music already playing")
 		end
-		
+	elseif state.wasPlayingBeforeDeath then
 		state.isPlaying = true
-		sound:Play()
 		
-		task.wait(0.2)
-		if state.savedTimePosition > 0 and state.savedTimePosition < sound.TimeLength then
-			sound.TimePosition = state.savedTimePosition
+		if not sound.IsPlaying then
+			sound:Play()
 		end
 	else
-		print("⏹️ Keeping STOPPED state - Music will NOT auto-play")
 		state.isPlaying = false
+		
 		if sound.IsPlaying then
-			sound:Stop()
+			sound:Pause()
 		end
 	end
 	
 	updatePlayButton()
-	saveData()
-	
-	print("✅ Respawn complete - Music: " .. (state.isPlaying and "PLAYING" or "STOPPED"))
+	saveData(false)
 end)
 
 -- ============================================
@@ -627,25 +617,87 @@ if dataLoaded then
 	sound.Volume = state.volume * 0.25
 end
 
-updateSong(false)
 updateLoopDisplay()
 
+-- Setup character listener FIRST before initializing music
 if player.Character then
 	setupCharacter(player.Character)
 end
 
-if state.isFirstJoin and not dataLoaded then
+-- AUTO-PLAY LOGIC: Always play music on first join
+if not dataLoaded or state.isFirstJoin then
 	print("🎵 First join detected - Auto-playing music...")
-	task.wait(0.5)
+	
+	-- Load the song first
+	local currentSong = musicList[state.currentIndex]
+	sound.SoundId = currentSong.id
+	songTitleLabel.Text = currentSong.title
+	
+	-- Wait for sound to load
+	sound.Loaded:Wait()
+	task.wait(0.2) -- Increased delay to ensure character is fully loaded
+	
+	-- Set state and play
 	state.isPlaying = true
-	sound:Play()
 	state.isFirstJoin = false
-	saveData()
-else
-	print("⏹️ Restoring previous state - Music: " .. (state.isPlaying and "PLAYING" or "STOPPED"))
-	if state.isPlaying then
-		task.wait(0.3)
+	
+	-- Make sure sound is not looped initially (loop mode "all" handles this differently)
+	sound.Looped = false
+	
+	sound:Play()
+	
+	-- Verify it's playing
+	task.wait(0.1)
+	if not sound.IsPlaying then
+		warn("⚠️ Sound failed to play, retrying...")
 		sound:Play()
+	end
+	
+	updatePlayButton()
+	
+	-- Update time label
+	if sound.TimeLength > 0 then
+		timeLabel.Text = "00:00 / " .. formatTime(sound.TimeLength)
+	end
+	
+	saveData(true)
+	print("✅ Music started playing! IsPlaying: " .. tostring(sound.IsPlaying))
+	print("📊 Sound Length: " .. tostring(sound.TimeLength) .. "s")
+	
+elseif dataLoaded and state.isPlaying then
+	print("🎵 Restoring previous session - Music was playing")
+	
+	-- Load the saved song
+	local currentSong = musicList[state.currentIndex]
+	sound.SoundId = currentSong.id
+	songTitleLabel.Text = currentSong.title
+	sound.Loaded:Wait()
+	task.wait(0.1)
+	
+	-- Resume playback
+	sound.Looped = (state.loopMode == "one")
+	sound:Play()
+	updatePlayButton()
+	
+	if sound.TimeLength > 0 then
+		timeLabel.Text = "00:00 / " .. formatTime(sound.TimeLength)
+	end
+	
+else
+	print("⏹️ Music player ready - Press play to start")
+	
+	-- Load the song but don't play
+	local currentSong = musicList[state.currentIndex]
+	sound.SoundId = currentSong.id
+	songTitleLabel.Text = currentSong.title
+	sound.Loaded:Wait()
+	
+	state.isPlaying = false
+	sound.Looped = false
+	updatePlayButton()
+	
+	if sound.TimeLength > 0 then
+		timeLabel.Text = "00:00 / " .. formatTime(sound.TimeLength)
 	end
 end
 
@@ -653,5 +705,6 @@ print("🎵 Music Player Loaded!")
 print("📋 Total Songs: " .. #musicList)
 print("💾 Save Data: " .. (dataLoaded and "Loaded" or "New Session"))
 print("🔁 Default Loop Mode: All")
+print("🎼 Auto-Play: " .. (state.isFirstJoin and "ENABLED" or "From Previous State"))
 
 updatePlayButton()
