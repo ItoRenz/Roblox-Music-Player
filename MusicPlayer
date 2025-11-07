@@ -1,9 +1,9 @@
 --[[
 ============================================
-ROBLOX MUSIC PLAYER
+ROBLOX MUSIC PLAYER - LUXURY GOLD EDITION
 Author: ItoRenz00
-Version: 1.0.3
-Description: Advanced music player with persistent state, loop modes, mobile support, and auto-play on first join
+Version: 1.0.8
+Description: Advanced music player with luxurious gold theme (Final Version)
 Place this script in: StarterPlayer > StarterPlayerScripts
 ============================================
 --]]
@@ -22,27 +22,44 @@ local playerGui = player:WaitForChild("PlayerGui")
 local isMobile = UserInputService.TouchEnabled and not UserInputService.KeyboardEnabled
 
 -- ============================================
+-- LUXURY COLOR PALETTE (Emas Kecoklatan)
+-- ============================================
+
+local COLORS = {
+	-- Warna Emas
+	gold = Color3.fromRGB(212, 175, 55),        -- Emas klasik
+	goldLight = Color3.fromRGB(255, 215, 0),    -- Emas terang
+	goldDark = Color3.fromRGB(184, 134, 11),    -- Emas tua
+	
+	-- Warna Coklat Mewah
+	brownLuxury = Color3.fromRGB(101, 67, 33),  -- Coklat kulit
+	brownDark = Color3.fromRGB(64, 43, 24),     -- Coklat gelap
+	brownRich = Color3.fromRGB(139, 90, 43),    -- Coklat kaya
+	
+	-- Background Gelap Mewah
+	bgPrimary = Color3.fromRGB(20, 16, 12),     -- Hitam kecoklatan
+	bgSecondary = Color3.fromRGB(28, 22, 16),   -- Coklat sangat gelap
+	bgAccent = Color3.fromRGB(40, 32, 24),      -- Coklat gelap aksen
+	
+	-- Text
+	textPrimary = Color3.fromRGB(255, 248, 220), -- Cornsilk (emas pucat)
+	textSecondary = Color3.fromRGB(218, 165, 32), -- Goldenrod
+	textMuted = Color3.fromRGB(160, 140, 100),   -- Abu-abu keemasan
+}
+
+-- ============================================
 -- MUSIC CONFIGURATION
 -- ============================================
 
 local musicList = {
-	{id = "rbxassetid://133857865643061", title = "Indonesia to Australia"},
-	{id = "rbxassetid://114138177515042", title = "Where We Are"},
-	{id = "rbxassetid://89968719801460", title = "Next"},
-	{id = "rbxassetid://129988226070628", title = "DJ Nasty Girl"},
-	{id = "rbxassetid://89610760702249", title = "Stereo Love"},
-	{id = "rbxassetid://118390472006859", title = "DJ Party Shaker"},
-	{id = "rbxassetid://90145710334449", title = "DJ World"},
-	{id = "rbxassetid://89180400948567", title = "Phonk Toma"},
-	{id = "rbxassetid://116239599730544", title = "Goat"},
-	{id = "rbxassetid://135018311294635", title = "DJ Cinnamon"},
-	{id = "rbxassetid://96077163288111", title = "Kita Usahakan Lagi"},
-	{id = "rbxassetid://77533933904801", title = "Coba Coba"},
-	{id = "rbxassetid://104207837699519", title = "Tabola bale"},
-	{id = "rbxassetid://119254319180287", title = "Culik Aku Dong"},
-	{id = "rbxassetid://116255319981650", title = "Jamilah aisyah"},
-	{id = "rbxassetid://133361466559971", title = "Dame Um Grrr"},
-	{id = "rbxassetid://80223079206027", title = "Kecewa"},
+    {id = "rbxassetid://114138177515042", title = "Where We Are"},
+    {id = "rbxassetid://89180400948567", title = "Phonk Toma"},
+    {id = "rbxassetid://89610760702249", title = "Stereo Love"},
+    {id = "rbxassetid://133361466559971", title = "Dame Um Grrr"},
+    {id = "rbxassetid://96077163288111", title = "Kita Usahakan Lagi"},
+    {id = "rbxassetid://116255319981650", title = "Jamilah aisyah"},
+    {id = "rbxassetid://104207837699519", title = "Tabola bale"},
+    {id = "rbxassetid://119254319180287", title = "Culik Aku Dong"},
 }
 
 -- ============================================
@@ -117,7 +134,7 @@ sound.Volume = state.volume * 0.25
 sound.Name = "MusicPlayerSound"
 
 -- ============================================
--- UI SETUP
+-- UI SETUP - LUXURY GOLD THEME
 -- ============================================
 
 local screenGui = Instance.new("ScreenGui")
@@ -135,14 +152,14 @@ local function createUIElement(className, properties)
 	return element
 end
 
--- Toggle Button
+-- Toggle Button (Gold Theme)
 local toggleButton = createUIElement("TextButton", {
 	Name = "ToggleButton",
 	Parent = screenGui,
-	BackgroundColor3 = Color3.fromRGB(30, 30, 45),
+	BackgroundColor3 = COLORS.brownDark,
 	BorderSizePixel = 0,
 	Text = "MUSIC",
-	TextColor3 = Color3.fromRGB(255, 255, 255),
+	TextColor3 = COLORS.textPrimary,
 	Font = Enum.Font.GothamBold,
 	ZIndex = 10,
 	AutoButtonColor = false,
@@ -151,14 +168,14 @@ local toggleButton = createUIElement("TextButton", {
 	TextSize = isMobile and 12 or 14
 })
 
-createUIElement("UICorner", {CornerRadius = UDim.new(0, 8), Parent = toggleButton})
-createUIElement("UIStroke", {Color = Color3.fromRGB(100, 200, 255), Thickness = 2, Parent = toggleButton})
+createUIElement("UICorner", {CornerRadius = UDim.new(0, 10), Parent = toggleButton})
+createUIElement("UIStroke", {Color = COLORS.gold, Thickness = 2, Parent = toggleButton})
 
--- Main Frame
+-- Main Frame (Luxury Dark Brown + Gold)
 local mainFrame = createUIElement("Frame", {
 	Name = "MusicPlayer",
 	Parent = screenGui,
-	BackgroundColor3 = Color3.fromRGB(25, 28, 38),
+	BackgroundColor3 = COLORS.bgPrimary,
 	BorderSizePixel = 0,
 	Visible = false,
 	ClipsDescendants = true,
@@ -166,23 +183,25 @@ local mainFrame = createUIElement("Frame", {
 	Position = isMobile and UDim2.new(0.5, 55, 0, 12) or UDim2.new(0.5, -115, 0, 12)
 })
 
-createUIElement("UICorner", {CornerRadius = UDim.new(0, 8), Parent = mainFrame})
-createUIElement("UIStroke", {Color = Color3.fromRGB(70, 180, 255), Thickness = 2.5, Parent = mainFrame})
+createUIElement("UICorner", {CornerRadius = UDim.new(0, 10), Parent = mainFrame})
+createUIElement("UIStroke", {Color = COLORS.gold, Thickness = 2.5, Parent = mainFrame})
 
+-- Gradient background (Dark brown to lighter brown)
 local gradient = createUIElement("UIGradient", {Parent = mainFrame, Rotation = 45})
 gradient.Color = ColorSequence.new{
-	ColorSequenceKeypoint.new(0, Color3.fromRGB(25, 28, 38)),
-	ColorSequenceKeypoint.new(1, Color3.fromRGB(35, 40, 55))
+	ColorSequenceKeypoint.new(0, COLORS.bgPrimary),
+	ColorSequenceKeypoint.new(0.5, COLORS.bgSecondary),
+	ColorSequenceKeypoint.new(1, COLORS.bgAccent)
 }
 
 -- Close Button
 local closeBtn = createUIElement("TextButton", {
 	Name = "CloseButton",
 	Parent = mainFrame,
-	BackgroundColor3 = Color3.fromRGB(200, 50, 50),
+	BackgroundColor3 = COLORS.brownRich,
 	BorderSizePixel = 0,
 	Text = "X",
-	TextColor3 = Color3.fromRGB(255, 255, 255),
+	TextColor3 = COLORS.textPrimary,
 	Font = Enum.Font.GothamBold,
 	AutoButtonColor = false,
 	ZIndex = 2,
@@ -192,13 +211,14 @@ local closeBtn = createUIElement("TextButton", {
 })
 
 createUIElement("UICorner", {CornerRadius = UDim.new(0, 6), Parent = closeBtn})
+createUIElement("UIStroke", {Color = COLORS.gold, Thickness = 1, Parent = closeBtn})
 
--- Title Label
+-- Title Label (Gold)
 local titleLabel = createUIElement("TextLabel", {
 	Parent = mainFrame,
 	BackgroundTransparency = 1,
-	Text = "Music Player",
-	TextColor3 = Color3.fromRGB(255, 255, 255),
+	Text = "Luxury Music Player",
+	TextColor3 = COLORS.goldLight,
 	Font = Enum.Font.GothamBold,
 	TextXAlignment = Enum.TextXAlignment.Left,
 	Size = UDim2.new(1, -55, 0, 20),
@@ -206,22 +226,22 @@ local titleLabel = createUIElement("TextLabel", {
 	TextSize = isMobile and 12 or 13
 })
 
--- Divider Line
+-- Divider Line (Gold)
 createUIElement("Frame", {
 	Parent = mainFrame,
-	BackgroundColor3 = Color3.fromRGB(70, 180, 255),
+	BackgroundColor3 = COLORS.gold,
 	BorderSizePixel = 0,
-	BackgroundTransparency = 0.7,
-	Size = UDim2.new(1, -16, 0, 1),
+	BackgroundTransparency = 0.3,
+	Size = UDim2.new(1, -16, 0, 1.5),
 	Position = UDim2.new(0, 8, 0, 26)
 })
 
--- Song Title
+-- Song Title (Gold text)
 local songTitleLabel = createUIElement("TextLabel", {
 	Parent = mainFrame,
 	BackgroundTransparency = 1,
 	Text = musicList[1].title,
-	TextColor3 = Color3.fromRGB(255, 255, 255),
+	TextColor3 = COLORS.textPrimary,
 	Font = Enum.Font.GothamBold,
 	TextXAlignment = Enum.TextXAlignment.Center,
 	TextScaled = true,
@@ -229,61 +249,70 @@ local songTitleLabel = createUIElement("TextLabel", {
 	Position = UDim2.new(0, 10, 0, 29)
 })
 
--- Progress Bar
+-- Progress Bar (Gold)
 local progressBg = createUIElement("Frame", {
 	Name = "ProgressBg",
 	Parent = mainFrame,
-	BackgroundColor3 = Color3.fromRGB(45, 50, 65),
+	BackgroundColor3 = COLORS.brownDark,
 	BorderSizePixel = 0,
 	Size = UDim2.new(1, -20, 0, 4),
 	Position = UDim2.new(0, 10, 0, 56)
 })
 
 createUIElement("UICorner", {CornerRadius = UDim.new(1, 0), Parent = progressBg})
+createUIElement("UIStroke", {Color = COLORS.brownRich, Thickness = 0.5, Transparency = 0.5, Parent = progressBg})
 
 local progressFill = createUIElement("Frame", {
 	Name = "ProgressFill",
 	Parent = progressBg,
-	BackgroundColor3 = Color3.fromRGB(70, 180, 255),
+	BackgroundColor3 = COLORS.gold,
 	BorderSizePixel = 0,
 	Size = UDim2.new(0, 0, 1, 0)
 })
 
 createUIElement("UICorner", {CornerRadius = UDim.new(1, 0), Parent = progressFill})
 
--- Time Display
+-- Gold gradient untuk progress fill
+local progressGradient = createUIElement("UIGradient", {Parent = progressFill})
+progressGradient.Color = ColorSequence.new{
+	ColorSequenceKeypoint.new(0, COLORS.goldDark),
+	ColorSequenceKeypoint.new(0.5, COLORS.gold),
+	ColorSequenceKeypoint.new(1, COLORS.goldLight)
+}
+
+-- Time Display (Gold)
 local timeLabel = createUIElement("TextLabel", {
 	Parent = mainFrame,
 	BackgroundTransparency = 1,
 	Size = UDim2.new(1, 0, 0, 12),
 	Text = "00:00 / 00:00",
-	TextColor3 = Color3.fromRGB(200, 210, 225),
+	TextColor3 = COLORS.textSecondary,
 	Font = Enum.Font.Gotham,
 	TextXAlignment = Enum.TextXAlignment.Center,
 	Position = UDim2.new(0, 0, 0, 62),
 	TextSize = isMobile and 9 or 10
 })
 
--- Loop Status Label
+-- Loop Status Label (Gold)
 local loopStatusLabel = createUIElement("TextLabel", {
 	Parent = mainFrame,
 	BackgroundTransparency = 1,
 	Text = "Loop: All",
-	TextColor3 = Color3.fromRGB(70, 180, 255),
-	Font = Enum.Font.Gotham,
+	TextColor3 = COLORS.textSecondary,
+	Font = Enum.Font.GothamBold,
 	TextXAlignment = Enum.TextXAlignment.Center,
 	Size = isMobile and UDim2.new(0, 55, 0, 12) or UDim2.new(0, 60, 0, 12),
 	Position = UDim2.new(0, 10, 0, 78),
 	TextSize = isMobile and 8 or 9
 })
 
--- Volume Input
+-- Volume Input (Dark brown with gold border)
 local volumeInput = createUIElement("TextBox", {
 	Parent = mainFrame,
-	BackgroundColor3 = Color3.fromRGB(45, 50, 65),
+	BackgroundColor3 = COLORS.brownDark,
 	BorderSizePixel = 0,
 	Text = tostring(state.volume),
-	TextColor3 = Color3.fromRGB(255, 255, 255),
+	TextColor3 = COLORS.textPrimary,
 	Font = Enum.Font.GothamBold,
 	PlaceholderText = "0-10",
 	ClearTextOnFocus = false,
@@ -294,7 +323,7 @@ local volumeInput = createUIElement("TextBox", {
 })
 
 createUIElement("UICorner", {CornerRadius = UDim.new(1, 0), Parent = volumeInput})
-createUIElement("UIStroke", {Color = Color3.fromRGB(70, 180, 255), Thickness = 0.5, Transparency = 0.5, Parent = volumeInput})
+createUIElement("UIStroke", {Color = COLORS.gold, Thickness = 1.5, Parent = volumeInput})
 
 -- Controls Container
 local controlsFrame = createUIElement("Frame", {
@@ -304,57 +333,66 @@ local controlsFrame = createUIElement("Frame", {
 	Position = UDim2.new(0, 0, 0, 92)
 })
 
--- Control Buttons
+-- ============================================
+-- CONTROL BUTTONS - Compact Play Button Version
+-- ============================================
+
+-- Loop Button
 local loopBtn = createUIElement("TextButton", {
 	Parent = controlsFrame,
 	BackgroundTransparency = 1,
 	BorderSizePixel = 0,
-	Text = "🔁",
-	TextColor3 = Color3.fromRGB(70, 180, 255),
+	Text = "LOOP",
+	TextColor3 = COLORS.textSecondary,
 	Font = Enum.Font.GothamBold,
 	AutoButtonColor = false,
 	Size = isMobile and UDim2.new(0, 26, 0, 26) or UDim2.new(0, 28, 0, 28),
 	Position = isMobile and UDim2.new(0, 10, 0.5, -13) or UDim2.new(0, 10, 0.5, -14),
-	TextSize = isMobile and 15 or 16
+	TextSize = isMobile and 8 or 9
 })
 
+-- Previous Button
 local prevBtn = createUIElement("TextButton", {
 	Parent = controlsFrame,
 	BackgroundTransparency = 1,
 	BorderSizePixel = 0,
-	Text = "⏮️",
-	TextColor3 = Color3.fromRGB(220, 220, 230),
+	Text = "<<",
+	TextColor3 = COLORS.gold,
 	Font = Enum.Font.GothamBold,
 	AutoButtonColor = false,
 	Size = isMobile and UDim2.new(0, 26, 0, 26) or UDim2.new(0, 28, 0, 28),
 	Position = isMobile and UDim2.new(0.5, -39, 0.5, -13) or UDim2.new(0.5, -42, 0.5, -14),
-	TextSize = isMobile and 13 or 14
+	TextSize = isMobile and 12 or 13
 })
 
+-- Play Button (Compact background)
 local playBtn = createUIElement("TextButton", {
 	Parent = controlsFrame,
-	BackgroundTransparency = 1,
+	BackgroundColor3 = COLORS.gold,
 	BorderSizePixel = 0,
-	Text = "▶️",
-	TextColor3 = Color3.fromRGB(70, 180, 255),
+	Text = ">",
+	TextColor3 = COLORS.brownDark,
 	Font = Enum.Font.GothamBold,
 	AutoButtonColor = false,
-	Size = isMobile and UDim2.new(0, 30, 0, 30) or UDim2.new(0, 32, 0, 32),
-	Position = isMobile and UDim2.new(0.5, -15, 0.5, -15) or UDim2.new(0.5, -16, 0.5, -16),
-	TextSize = isMobile and 17 or 18
+	Size = isMobile and UDim2.new(0, 26, 0, 26) or UDim2.new(0, 28, 0, 28),
+	Position = isMobile and UDim2.new(0.5, -13, 0.5, -13) or UDim2.new(0.5, -14, 0.5, -14),
+	TextSize = isMobile and 14 or 16
 })
 
+createUIElement("UICorner", {CornerRadius = UDim.new(0, 6), Parent = playBtn})
+
+-- Next Button
 local nextBtn = createUIElement("TextButton", {
 	Parent = controlsFrame,
 	BackgroundTransparency = 1,
 	BorderSizePixel = 0,
-	Text = "⏭️",
-	TextColor3 = Color3.fromRGB(220, 220, 230),
+	Text = ">>",
+	TextColor3 = COLORS.gold,
 	Font = Enum.Font.GothamBold,
 	AutoButtonColor = false,
 	Size = isMobile and UDim2.new(0, 26, 0, 26) or UDim2.new(0, 28, 0, 28),
 	Position = isMobile and UDim2.new(0.5, 13, 0.5, -13) or UDim2.new(0.5, 14, 0.5, -14),
-	TextSize = isMobile and 13 or 14
+	TextSize = isMobile and 12 or 13
 })
 
 -- ============================================
@@ -384,27 +422,31 @@ local function updateProgressBar()
 end
 
 local function updatePlayButton()
-	playBtn.Text = state.isPlaying and "⏸️" or "▶️"
+	if state.isPlaying then
+		playBtn.Text = "||"
+	else
+		playBtn.Text = ">"
+	end
 end
 
 local function updateLoopDisplay()
 	if state.loopMode == "off" then
 		loopStatusLabel.Text = "Loop: Off"
-		loopStatusLabel.TextColor3 = Color3.fromRGB(150, 150, 160)
-		loopBtn.Text = "🔁"
-		loopBtn.TextColor3 = Color3.fromRGB(150, 150, 160)
+		loopStatusLabel.TextColor3 = COLORS.textMuted
+		loopBtn.Text = "OFF"
+		loopBtn.TextColor3 = COLORS.textMuted
 		sound.Looped = false
 	elseif state.loopMode == "all" then
 		loopStatusLabel.Text = "Loop: All"
-		loopStatusLabel.TextColor3 = Color3.fromRGB(70, 180, 255)
-		loopBtn.Text = "🔁"
-		loopBtn.TextColor3 = Color3.fromRGB(70, 180, 255)
+		loopStatusLabel.TextColor3 = COLORS.textSecondary
+		loopBtn.Text = "ALL"
+		loopBtn.TextColor3 = COLORS.textSecondary
 		sound.Looped = false
 	else
 		loopStatusLabel.Text = "Loop: One"
-		loopStatusLabel.TextColor3 = Color3.fromRGB(255, 150, 100)
-		loopBtn.Text = "🔂"
-		loopBtn.TextColor3 = Color3.fromRGB(255, 150, 100)
+		loopStatusLabel.TextColor3 = COLORS.goldLight
+		loopBtn.Text = "ONE"
+		loopBtn.TextColor3 = COLORS.goldLight
 		sound.Looped = true
 	end
 end
@@ -515,7 +557,6 @@ sound.Ended:Connect(function()
 		updatePlayButton()
 		saveData()
 	end
-	-- loopMode "one" will loop automatically because sound.Looped = true
 end)
 
 volumeInput.FocusLost:Connect(function()
@@ -541,7 +582,6 @@ RunService.Heartbeat:Connect(function()
 	end
 end)
 
--- Auto-save every 30 seconds
 task.spawn(function()
 	while true do
 		task.wait(30)
@@ -560,25 +600,19 @@ local function setupCharacter(character)
 	
 	humanoid.Died:Connect(function()
 		print("💀 Player died - Music continues")
-		
 		state.isDead = true
 		state.wasPlayingBeforeDeath = state.isPlaying
 		state.savedTimePosition = sound.TimePosition
-		
 		saveData(false)
 	end)
 end
 
 player.CharacterAdded:Connect(function(character)
 	print("🔄 Character spawned")
-	
 	setupCharacter(character)
-	
 	task.wait(0.5)
-	
 	state.isDead = false
 	
-	-- If this is initial spawn and music should be playing, ensure it continues
 	if state.isPlaying then
 		print("🎵 Ensuring music continues after spawn...")
 		if not sound.IsPlaying then
@@ -589,13 +623,11 @@ player.CharacterAdded:Connect(function(character)
 		end
 	elseif state.wasPlayingBeforeDeath then
 		state.isPlaying = true
-		
 		if not sound.IsPlaying then
 			sound:Play()
 		end
 	else
 		state.isPlaying = false
-		
 		if sound.IsPlaying then
 			sound:Pause()
 		end
@@ -619,34 +651,25 @@ end
 
 updateLoopDisplay()
 
--- Setup character listener FIRST before initializing music
 if player.Character then
 	setupCharacter(player.Character)
 end
 
--- AUTO-PLAY LOGIC: Always play music on first join
 if not dataLoaded or state.isFirstJoin then
 	print("🎵 First join detected - Auto-playing music...")
 	
-	-- Load the song first
 	local currentSong = musicList[state.currentIndex]
 	sound.SoundId = currentSong.id
 	songTitleLabel.Text = currentSong.title
 	
-	-- Wait for sound to load
 	sound.Loaded:Wait()
-	task.wait(0.2) -- Increased delay to ensure character is fully loaded
+	task.wait(0.2)
 	
-	-- Set state and play
 	state.isPlaying = true
 	state.isFirstJoin = false
-	
-	-- Make sure sound is not looped initially (loop mode "all" handles this differently)
 	sound.Looped = false
-	
 	sound:Play()
 	
-	-- Verify it's playing
 	task.wait(0.1)
 	if not sound.IsPlaying then
 		warn("⚠️ Sound failed to play, retrying...")
@@ -655,26 +678,22 @@ if not dataLoaded or state.isFirstJoin then
 	
 	updatePlayButton()
 	
-	-- Update time label
 	if sound.TimeLength > 0 then
 		timeLabel.Text = "00:00 / " .. formatTime(sound.TimeLength)
 	end
 	
 	saveData(true)
-	print("✅ Music started playing! IsPlaying: " .. tostring(sound.IsPlaying))
-	print("📊 Sound Length: " .. tostring(sound.TimeLength) .. "s")
+	print("✅ Music started playing!")
 	
 elseif dataLoaded and state.isPlaying then
 	print("🎵 Restoring previous session - Music was playing")
 	
-	-- Load the saved song
 	local currentSong = musicList[state.currentIndex]
 	sound.SoundId = currentSong.id
 	songTitleLabel.Text = currentSong.title
 	sound.Loaded:Wait()
 	task.wait(0.1)
 	
-	-- Resume playback
 	sound.Looped = (state.loopMode == "one")
 	sound:Play()
 	updatePlayButton()
@@ -686,7 +705,6 @@ elseif dataLoaded and state.isPlaying then
 else
 	print("⏹️ Music player ready - Press play to start")
 	
-	-- Load the song but don't play
 	local currentSong = musicList[state.currentIndex]
 	sound.SoundId = currentSong.id
 	songTitleLabel.Text = currentSong.title
@@ -701,10 +719,9 @@ else
 	end
 end
 
-print("🎵 Music Player Loaded!")
+print("✨ Luxury Music Player Loaded! ✨")
+print("🎨 Theme: Gold & Brown Luxury Edition (V1.0.8)")
 print("📋 Total Songs: " .. #musicList)
 print("💾 Save Data: " .. (dataLoaded and "Loaded" or "New Session"))
-print("🔁 Default Loop Mode: All")
-print("🎼 Auto-Play: " .. (state.isFirstJoin and "ENABLED" or "From Previous State"))
 
 updatePlayButton()
